@@ -4,6 +4,8 @@ import { ThemeProvider } from "next-themes";
 import { Geist, Geist_Mono } from "next/font/google";
 import { usePathname } from "next/navigation";
 import "./globals.css";
+import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,7 +25,7 @@ export default function RootLayout({
   const pathname = usePathname();
 
   // List of routes that should NOT show Navbar
-  const noNavbarRoutes = ["/login", "/signup", "/admin"];
+  const noNavbarRoutes = ["/login", "/sign-up", "/admin", "/user"];
   const isNavbarVisible = !noNavbarRoutes.some((path) =>
     pathname.startsWith(path),
   );
@@ -32,15 +34,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {isNavbarVisible && <Navbar />}
-          {children}
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {isNavbarVisible && <Navbar />}
+            {children}
+            <Toaster richColors position="top-center" />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

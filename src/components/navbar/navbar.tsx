@@ -22,6 +22,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface MenuItem {
   title: string;
@@ -60,70 +63,9 @@ const Navbar = ({
   },
   menu = [
     { title: "Home", url: "/" },
-    // {
-    //   title: "Products",
-    //   url: "#",
-    //   items: [
-    //     {
-    //       title: "Blog",
-    //       description: "The latest industry news, updates, and info",
-    //       icon: <Book className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Company",
-    //       description: "Our mission is to innovate and empower the world",
-    //       icon: <Trees className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Careers",
-    //       description: "Browse job listing and discover our workspace",
-    //       icon: <Sunset className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Support",
-    //       description:
-    //         "Get in touch with our support team or visit our community forums",
-    //       icon: <Zap className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Resources",
-    //   url: "#",
-    //   items: [
-    //     {
-    //       title: "Help Center",
-    //       description: "Get all the answers you need right here",
-    //       icon: <Zap className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Contact Us",
-    //       description: "We are here to help you with any questions you have",
-    //       icon: <Sunset className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Status",
-    //       description: "Check the current status of our services and APIs",
-    //       icon: <Trees className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Terms of Service",
-    //       description: "Our terms and conditions for using our services",
-    //       icon: <Book className="size-5 shrink-0" />,
-    //       url: "#",
-    //     },
-    //   ],
-    // },
     {
       title: "Pricing",
-      url: "#",
+      url: "/pricing",
     },
     {
       title: "About Us",
@@ -136,9 +78,47 @@ const Navbar = ({
   ],
   auth = {
     login: { title: "Login", url: "/login" },
-    signup: { title: "Sign up", url: "/signup" },
+    signup: { title: "Sign up", url: "/sign-up" },
   },
 }: Navbar1Props) => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleDashboard = () => {
+    if (session?.user?.role === "Admin") {
+      router.push("/admin");
+    } else {
+      router.push("/user");
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+
+    try {
+      if (session?.user) {
+        // Call backend logout API to revoke token using authenticated request
+        const res = await fetch("http://localhost:8080/v1/auth/logout", {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
+        if (!res.ok) {
+          console.error("Error during backend logout:");
+        }
+      }
+    } catch (error) {
+      console.error("Error during backend logout:", error);
+      // Continue with NextAuth logout even if backend logout fails
+    } finally {
+      // Always perform NextAuth logout
+      await signOut({ callbackUrl: "/" });
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <section
       className="bg-background sticky top-0 z-50 flex border-b-2 p-4"
@@ -164,12 +144,34 @@ const Navbar = ({
             </div>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Button asChild variant="outline" size="sm">
-              <a href={auth.login.url}>{auth.login.title}</a>
-            </Button>
-            <Button asChild size="sm">
-              <a href={auth.signup.url}>{auth.signup.title}</a>
-            </Button>
+            {status === "loading" ? null : session ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDashboard}
+                  disabled={isLoggingOut}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                >
+                  {isLoggingOut ? "Logging out..." : "Logout"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="outline" size="sm">
+                  <a href={auth.login.url}>{auth.login.title}</a>
+                </Button>
+                <Button asChild size="sm">
+                  <a href={auth.signup.url}>{auth.signup.title}</a>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -203,14 +205,36 @@ const Navbar = ({
                     {menu.map((item) => renderMobileMenuItem(item))}
                   </Accordion>
 
-                  <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <a href={auth.login.url}>{auth.login.title}</a>
-                    </Button>
-                    <Button asChild>
-                      <a href={auth.signup.url}>{auth.signup.title}</a>
-                    </Button>
-                  </div>
+                  {status === "loading" ? null : (
+                    <div className="flex flex-col gap-3">
+                      {session ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            onClick={handleDashboard}
+                            disabled={isLoggingOut}
+                          >
+                            Dashboard
+                          </Button>
+                          <Button
+                            onClick={handleLogout}
+                            disabled={isLoggingOut}
+                          >
+                            {isLoggingOut ? "Logging out..." : "Logout"}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button asChild variant="outline">
+                            <a href={auth.login.url}>{auth.login.title}</a>
+                          </Button>
+                          <Button asChild>
+                            <a href={auth.signup.url}>{auth.signup.title}</a>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
