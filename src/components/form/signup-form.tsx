@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -10,15 +11,38 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { publicApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { signupFormSchema, SignupFormValues } from "./signup-form.schema";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { z } from "zod";
+
+const signupFormSchema = z
+  .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    email: z.string().email({ message: "Invalid email address" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+    passwordConfirm: z.string().min(6, {
+      message: "Password confirmation must be at least 6 characters",
+    }),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: "Passwords do not match",
+    path: ["passwordConfirm"],
+  });
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  type SignupFormValues = z.infer<typeof signupFormSchema>;
+  const router = useRouter();
+  const [apiError, setApiError] = useState<string>("");
+
   const {
     register,
     handleSubmit,
@@ -28,8 +52,39 @@ export function SignupForm({
   });
 
   const onSubmit = async (data: SignupFormValues) => {
-    // handle signup logic here
-    console.log(data);
+    try {
+      // Clear any previous API errors
+      setApiError("");
+
+      console.log(data);
+      const res = await publicApi.post("/auth/register", {
+        email: data.email,
+        full_name: data.name,
+        password: data.password,
+      });
+
+      // Check if the response indicates success
+      if (res.status === 200 || res.status === 201) {
+        // Redirect to login page with success parameter
+        router.push("/login?from=signup");
+      }
+    } catch (error: any) {
+      console.error("error sign-up user", error);
+
+      // Handle API error response
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        if (errorData.message === "failed" && errorData.details) {
+          setApiError(errorData.details);
+        } else {
+          setApiError("An error occurred during signup. Please try again.");
+        }
+      } else {
+        setApiError(
+          "Network error. Please check your connection and try again.",
+        );
+      }
+    }
   };
 
   return (
@@ -42,6 +97,13 @@ export function SignupForm({
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
+              {/* Display API error if exists */}
+              {apiError && (
+                <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                  {apiError}
+                </div>
+              )}
+
               <div className="grid gap-3">
                 <Label htmlFor="name">Name</Label>
                 <Input

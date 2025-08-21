@@ -1,11 +1,16 @@
+"use client";
 import { ChartAreaInteractive } from "@/components/admin/chart-area-interactive";
 import { DataTable } from "@/components/admin/data-table";
 import { SectionCards } from "@/components/admin/section-cards";
 import { SiteHeader } from "@/components/admin/site-header";
 
 import data from "./data.json";
+import { useSession } from "next-auth/react";
 
 export default function AdminHomePage() {
+  const { data: session } = useSession();
+  console.log("session", session);
+
   return (
     <>
       <SiteHeader title={"Dashboard"} />

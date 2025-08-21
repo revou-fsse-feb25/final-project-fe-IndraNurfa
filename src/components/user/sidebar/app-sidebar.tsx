@@ -3,18 +3,11 @@
 import {
   IconCalendar,
   IconDashboard,
-  IconDatabase,
-  IconHelp,
   IconInnerShadowTop,
-  IconSearch,
-  IconSettings,
-  IconUsers,
 } from "@tabler/icons-react";
 import * as React from "react";
 
-import { NavMain } from "@/components/admin/sidebar/nav-main";
-import { NavSecondary } from "@/components/admin/sidebar/nav-secondary";
-import { NavUser } from "@/components/admin/sidebar/nav-user";
+import { NavMain } from "@/components/user/sidebar/nav-main";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +17,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
+import { NavUser } from "./nav-user";
 
 const data = {
   user: {
@@ -34,41 +29,24 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/admin",
+      url: "/user",
       icon: IconDashboard,
     },
     {
       title: "Bookings",
-      url: "/admin/booking",
+      url: "/user/booking",
       icon: IconCalendar,
     },
-    {
-      title: "Users",
-      url: "/admin/users",
-      icon: IconUsers,
-    },
-    {
-      title: "Management",
-      url: "/admin/management",
-      icon: IconDatabase,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
+    // {
+    //   title: "Users",
+    //   url: "/admin/users",
+    //   icon: IconUsers,
+    // },
+    // {
+    //   title: "Management",
+    //   url: "/admin/management",
+    //   icon: IconDatabase,
+    // },
   ],
 };
 
@@ -82,17 +60,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
+              <Link href="/">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">PadelHub Admin</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
