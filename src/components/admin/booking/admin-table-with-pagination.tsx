@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +62,15 @@ export default function AdminTableWithPagination({
   const [loadingActions, setLoadingActions] = useState<{
     [key: string]: boolean;
   }>({});
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: "confirm" | "cancel" | null;
+    booking: BookingDashboard | null;
+  }>({
+    isOpen: false,
+    type: null,
+    booking: null,
+  });
   const router = useRouter();
 
   const getStatusBadge = (status: string) => {
@@ -94,33 +113,12 @@ export default function AdminTableWithPagination({
       return;
     }
 
-    const actionKey = `confirm-${booking.uuid}`;
-    setLoadingActions((prev) => ({ ...prev, [actionKey]: true }));
-
-    try {
-      const client = createApiClient(session);
-      await client.patch(`/bookings/confirm/${booking.uuid}`);
-
-      toast.success("Booking confirmed successfully");
-      onBookingUpdated();
-    } catch (error: unknown) {
-      console.error("Error confirming booking:", error);
-
-      const axiosError = error as {
-        response?: { status?: number; data?: { message?: string } };
-      };
-      if (axiosError.response?.status === 401) {
-        toast.error("Session expired. Please login again.");
-      } else if (axiosError.response?.status === 404) {
-        toast.error("Booking not found");
-      } else {
-        toast.error(
-          axiosError.response?.data?.message || "Failed to confirm booking",
-        );
-      }
-    } finally {
-      setLoadingActions((prev) => ({ ...prev, [actionKey]: false }));
-    }
+    // Open confirmation dialog
+    setConfirmDialog({
+      isOpen: true,
+      type: "confirm",
+      booking,
+    });
   };
 
   const handleCancelBooking = async (booking: BookingDashboard) => {
@@ -129,17 +127,41 @@ export default function AdminTableWithPagination({
       return;
     }
 
-    const actionKey = `cancel-${booking.uuid}`;
+    // Open confirmation dialog
+    setConfirmDialog({
+      isOpen: true,
+      type: "cancel",
+      booking,
+    });
+  };
+
+  const executeBookingAction = async () => {
+    if (!confirmDialog.booking || !confirmDialog.type || !session) return;
+
+    const { booking, type } = confirmDialog;
+    const actionKey = `${type}-${booking.uuid}`;
+
     setLoadingActions((prev) => ({ ...prev, [actionKey]: true }));
+    setConfirmDialog({ isOpen: false, type: null, booking: null });
 
     try {
       const client = createApiClient(session);
-      await client.patch(`/bookings/cancel/${booking.uuid}`);
+      const endpoint =
+        type === "confirm"
+          ? `/bookings/confirm/${booking.uuid}`
+          : `/bookings/cancel/${booking.uuid}`;
 
-      toast.success("Booking canceled successfully");
+      await client.patch(endpoint);
+
+      toast.success(
+        `Booking ${type === "confirm" ? "confirmed" : "canceled"} successfully`,
+      );
       onBookingUpdated();
     } catch (error: unknown) {
-      console.error("Error canceling booking:", error);
+      console.error(
+        `Error ${type === "confirm" ? "confirming" : "canceling"} booking:`,
+        error,
+      );
 
       const axiosError = error as {
         response?: { status?: number; data?: { message?: string } };
@@ -150,7 +172,7 @@ export default function AdminTableWithPagination({
         toast.error("Booking not found");
       } else {
         toast.error(
-          axiosError.response?.data?.message || "Failed to cancel booking",
+          axiosError.response?.data?.message || `Failed to ${type} booking`,
         );
       }
     } finally {
@@ -291,6 +313,63 @@ export default function AdminTableWithPagination({
           </PaginationContent>
         </Pagination>
       )}
+
+      <AlertDialog
+        open={confirmDialog.isOpen}
+        onOpenChange={(open) =>
+          !open &&
+          setConfirmDialog({ isOpen: false, type: null, booking: null })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog.type === "confirm"
+                ? "Confirm Booking"
+                : "Cancel Booking"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.type === "confirm"
+                ? "Are you sure you want to confirm this booking?"
+                : "Are you sure you want to cancel this booking? This action cannot be undone."}
+              {confirmDialog.booking && (
+                <div className="mt-4 space-y-2 text-sm">
+                  <div>
+                    <strong>Booking ID:</strong> {confirmDialog.booking.uuid}
+                  </div>
+                  <div>
+                    <strong>Court:</strong> {confirmDialog.booking.court.name}
+                  </div>
+                  <div>
+                    <strong>Date:</strong>{" "}
+                    {formatDate(confirmDialog.booking.booking_date)}
+                  </div>
+                  <div>
+                    <strong>Time:</strong>{" "}
+                    {formatTime(confirmDialog.booking.start_time)} -{" "}
+                    {formatTime(confirmDialog.booking.end_time)}
+                  </div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeBookingAction}
+              className={
+                confirmDialog.type === "confirm"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }
+            >
+              {confirmDialog.type === "confirm"
+                ? "Confirm Booking"
+                : "Cancel Booking"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -2,6 +2,8 @@ export type CourtType = {
   id: number;
   name: string;
   price: string;
+  created_at?: Date;
+  updated_at?: Date;
 };
 
 export type Court = {
@@ -10,6 +12,9 @@ export type Court = {
   slug: string;
   is_active: boolean;
   master_court_types: CourtType;
+  created_at?: Date;
+  updated_at?: Date;
+  court_type_id?: number;
 };
 
 export type Booking = {

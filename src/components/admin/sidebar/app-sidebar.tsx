@@ -8,7 +8,6 @@ import {
   IconInnerShadowTop,
   IconSearch,
   IconSettings,
-  IconUsers,
 } from "@tabler/icons-react";
 import * as React from "react";
 
@@ -42,11 +41,11 @@ const data = {
       url: "/admin/booking",
       icon: IconCalendar,
     },
-    {
-      title: "Users",
-      url: "/admin/users",
-      icon: IconUsers,
-    },
+    // {
+    //   title: "Users",
+    //   url: "/admin/users",
+    //   icon: IconUsers,
+    // },
     {
       title: "Management",
       url: "/admin/management",
