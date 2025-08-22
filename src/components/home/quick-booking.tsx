@@ -30,8 +30,8 @@ import {
   ChevronDown,
   ShieldCheck,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const QuickBookingHome = () => {
@@ -41,27 +41,30 @@ const QuickBookingHome = () => {
   const [selectedCourt, setSelectedCourt] = useState<string>("any");
   const router = useRouter();
 
-  const api = createApiClient();
-
-  const fetchCourts = async () => {
+  const fetchCourts = useCallback(async () => {
     try {
+      console.log("fetch court", new Date());
+      const api = createApiClient();
       const res = await api.get("/courts");
       setCourts(res.data.data);
     } catch (err) {
       console.error("Failed to fetch courts", err);
     }
-  };
+  }, []);
 
   const handleSearchCourts = () => {
     const params = new URLSearchParams();
+    const dateStr = date
+      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+      : undefined;
 
     if (!date || selectedCourt === "any") {
       toast.warning("Please select both date and court");
       return;
     }
 
-    if (date) {
-      params.set("date", date.toISOString().split("T")[0]);
+    if (dateStr) {
+      params.set("date", dateStr);
     }
 
     if (selectedCourt && selectedCourt !== "any") {
@@ -73,7 +76,7 @@ const QuickBookingHome = () => {
 
   useEffect(() => {
     fetchCourts();
-  });
+  }, [fetchCourts]);
 
   return (
     <section

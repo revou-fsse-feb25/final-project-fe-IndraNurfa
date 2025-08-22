@@ -22,9 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { createApiClient } from "@/lib/api";
 import { AvailableSlot, Court } from "@/types";
 import { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { toast } from "sonner";
@@ -36,6 +38,7 @@ interface AvailableBookListProps {
   pricePerHour: number;
   courts: Court[];
   session: Session | null;
+  loading?: boolean;
   onBookingSuccess: () => void;
 }
 
@@ -46,6 +49,7 @@ export const AvailableBookList: React.FC<AvailableBookListProps> = ({
   pricePerHour,
   courts,
   session,
+  loading = false,
   onBookingSuccess,
 }: AvailableBookListProps) => {
   const router = useRouter();
@@ -66,7 +70,34 @@ export const AvailableBookList: React.FC<AvailableBookListProps> = ({
       : court;
   };
 
-  if (availableSlots.length === 0) {
+  // this skeleton not show if its still loading
+  if (loading) {
+    // Show 9 skeleton cards as a placeholder
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(9)].map((_, i) => (
+          <Card
+            key={i}
+            className="bg-card dark:border-zinc-800 dark:bg-zinc-900"
+          >
+            <CardHeader>
+              <Skeleton className="mb-2 h-6 w-1/2" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="mb-2 h-4 w-3/4" />
+              <Skeleton className="mb-2 h-4 w-1/2" />
+              <Skeleton className="h-8 w-full" />
+            </CardContent>
+            <CardFooter>
+              <Skeleton className="h-10 w-full" />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (availableSlots.length === 0 && !loading) {
     return (
       <Card className="bg-card text-center dark:border-zinc-800 dark:bg-zinc-900">
         <CardContent className="p-6">
@@ -162,6 +193,14 @@ export const AvailableBookList: React.FC<AvailableBookListProps> = ({
         (error as { response?: { data?: { details?: string } } })?.response
           ?.data?.details || "Failed to create booking";
       toast.error(errorMessage);
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 401) {
+        toast.error("Session expired. Please log in again.");
+        setTimeout(() => {
+          signOut({ callbackUrl: "/login" });
+        }, 2000);
+      }
     } finally {
       setIsLoading(false);
     }

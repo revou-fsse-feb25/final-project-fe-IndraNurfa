@@ -18,11 +18,12 @@ import {
 import { Court } from "@/types";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface FindBookingFormProps {
   initialDate?: string;
   initialCourt?: string;
+  loading?: boolean;
   courts: Court[];
   onSearch?: (date?: string, court?: string) => void;
 }
@@ -31,6 +32,7 @@ export const FindBookingForm = ({
   initialDate,
   initialCourt,
   courts,
+  loading = false,
   onSearch,
 }: FindBookingFormProps) => {
   const [open, setOpen] = useState(false);
@@ -47,6 +49,14 @@ export const FindBookingForm = ({
   );
   const router = useRouter();
 
+  useEffect(() => {
+    if (loading) {
+      setSelectedCourt("any");
+    } else {
+      setSelectedCourt(initialCourt || "any");
+    }
+  }, [loading, initialCourt]);
+
   const handleSearch = () => {
     const params = new URLSearchParams();
     const dateStr = date
@@ -60,7 +70,6 @@ export const FindBookingForm = ({
       params.set("court", selectedCourt);
     }
 
-    // console.log("params", params.toString());
     const newUrl = `/book?${params.toString()}`;
 
     // Call the onSearch callback if provided (for when used within the book page)

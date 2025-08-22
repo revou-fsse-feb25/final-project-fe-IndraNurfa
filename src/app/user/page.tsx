@@ -9,7 +9,7 @@ import { SiteHeader } from "@/components/user/site-header";
 import { createApiClient } from "@/lib/api";
 import { UserData } from "@/types";
 import { Edit, Mail, Save, Shield, User, X } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -24,22 +24,19 @@ export default function UserPage() {
   });
   const [loading, setLoading] = useState(false);
 
-  async function callApi() {
-    setLoading(true);
-    try {
-      const data = await createApiClient(session || undefined).get(
-        "users/profile",
-      );
-      console.log("API result", data);
-      const profile = data.data.data || {};
-      setUserData({ ...profile });
-      setEditForm({ name: profile.full_name, email: profile.email || "" });
-    } catch (error) {
-      console.error("Failed to fetch profile", error);
-    } finally {
-      setLoading(false);
+  // Use session data for initial user info
+  useEffect(() => {
+    if (session?.user) {
+      setUserData({
+        full_name: session.user.name || "",
+        email: session.user.email || "",
+      });
+      setEditForm({
+        name: session.user.name || "",
+        email: session.user.email || "",
+      });
     }
-  }
+  }, [session]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -54,6 +51,7 @@ export default function UserPage() {
         full_name: editForm.name,
       };
       await api.patch("users/profile", payload);
+
       const newUserData = { ...userData, ...payload };
       setUserData(newUserData);
 
@@ -71,6 +69,18 @@ export default function UserPage() {
       toast.success("Profile updated successfully");
     } catch (error) {
       console.error("Failed to update profile", error);
+
+      // Check if error is 401 unauthorized
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 401) {
+        toast.error("Session expired. Please log in again.");
+        setTimeout(() => {
+          signOut({ callbackUrl: "/login" });
+        }, 2000);
+        return; // Stop further execution
+      }
+
       const details = (error as { response?: { data?: { details?: string } } })
         ?.response?.data?.details;
       if (details) {
@@ -90,12 +100,6 @@ export default function UserPage() {
     });
     setIsEditing(false);
   };
-
-  useEffect(() => {
-    if (session) {
-      callApi();
-    }
-  });
 
   return (
     <>

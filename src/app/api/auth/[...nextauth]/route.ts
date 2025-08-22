@@ -115,7 +115,7 @@ const authOptions: NextAuthOptions = {
 
         return {
           ...token,
-          accessToken: data.data.access_token,
+          accessToken: data.data,
           refreshToken: data.data.refresh_token ?? token.refreshToken,
           accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15m
         };
