@@ -129,7 +129,7 @@ interface BookingDetailProps {
   bookings: Booking[];
 }
 
-export default function TableBooking({ bookings }: BookingDetailProps) {
+export default function TableAdminBooking({ bookings }: BookingDetailProps) {
   return (
     <div className="w-full">
       <div className="w-full overflow-hidden rounded-md border">

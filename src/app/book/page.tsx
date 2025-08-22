@@ -6,7 +6,7 @@ import { publicApi } from "@/lib/api";
 import { AvailableSlot, Court } from "@/types";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 function BookPageContent() {
   const [available, setAvailable] = useState<AvailableSlot[]>([]);
@@ -14,6 +14,7 @@ function BookPageContent() {
   const [courts, setCourts] = useState<Court[]>([]);
   const [searchDate, setSearchDate] = useState<string>("");
   const [searchCourt, setSearchCourt] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const { data: session } = useSession();
   const searchParams = useSearchParams();
@@ -22,6 +23,7 @@ function BookPageContent() {
 
   const fetchCourts = async () => {
     try {
+      console.log("fetch court", new Date());
       const res = await publicApi.get("/courts");
       setCourts(res.data.data);
     } catch (err) {
@@ -29,26 +31,41 @@ function BookPageContent() {
     }
   };
 
-  const fetchAvailable = async (searchDate?: string, searchCourt?: string) => {
-    const queryDate = searchDate || date;
-    const queryCourt = searchCourt || court;
+  const fetchAvailable = useCallback(
+    async (searchDate?: string, searchCourt?: string) => {
+      const queryDate = searchDate ?? date;
+      const queryCourt = searchCourt ?? court;
 
-    try {
-      const res = await publicApi.get("/bookings/available", {
-        params: { court: queryCourt, date: queryDate },
-      });
-      console.log(res.data);
-      setAvailable(res.data.data.available_slots);
-      setPricePerHour(res.data.data.price || 0);
-    } catch (err) {
-      console.error("Failed to fetch available bookings", err);
-    }
-  };
+      // Prevent duplicate concurrent requests for the same query (court|date)
+      const key = `${queryCourt}||${queryDate}`;
+      if (inFlightRef.current[key]) return; // already fetching same key
+
+      inFlightRef.current[key] = true;
+      setLoading(true);
+      try {
+        const res = await publicApi.get("/bookings/available", {
+          params: { court: queryCourt, date: queryDate },
+        });
+        console.log(res.data);
+        setAvailable(res.data.data.available_slots);
+        setPricePerHour(res.data.data.price || 0);
+      } catch (err) {
+        console.error("Failed to fetch available bookings", err);
+      } finally {
+        setLoading(false);
+        // mark finished so future calls for same key are allowed
+        inFlightRef.current[key] = false;
+      }
+    },
+    [court, date],
+  );
+
+  // track in-flight fetches so duplicate concurrent requests can be ignored
+  const inFlightRef = useRef<Record<string, boolean>>({});
 
   const handleSearch = (newDate?: string, newCourt?: string) => {
     setSearchDate(newDate || "");
     setSearchCourt(newCourt || "");
-    fetchAvailable(newDate, newCourt);
   };
 
   useEffect(() => {
@@ -59,7 +76,7 @@ function BookPageContent() {
     if (court || date) {
       fetchAvailable();
     }
-  });
+  }, [court, date, fetchAvailable]);
 
   return (
     <div className="container mx-auto px-4 pt-2 pb-16 md:pt-16">
@@ -70,6 +87,7 @@ function BookPageContent() {
         initialDate={date}
         initialCourt={court}
         courts={courts}
+        loading={loading}
         onSearch={handleSearch}
       />
       <AvailableBookList
@@ -79,6 +97,7 @@ function BookPageContent() {
         pricePerHour={pricePerHour}
         courts={courts}
         session={session}
+        loading={loading}
         onBookingSuccess={() => fetchAvailable(searchDate, searchCourt)}
       />
     </div>
