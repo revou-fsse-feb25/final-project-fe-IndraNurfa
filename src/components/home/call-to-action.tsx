@@ -23,7 +23,7 @@ const CallToActionHome = () => {
           </div>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button asChild size="lg" className="px-8 py-3 text-base">
-              <Link href="/book">
+              <Link href="#book">
                 Start Booking Now
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

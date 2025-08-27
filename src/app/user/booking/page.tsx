@@ -48,12 +48,16 @@ function UserBookingContent() {
         setLoading(false);
       }
     },
-    [session],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [session?.user?.id, session?.accessToken], // Use specific session properties instead of entire session object
   );
 
   useEffect(() => {
-    fetchBookings(currentPage);
-  }, [fetchBookings, currentPage]);
+    if (session) {
+      fetchBookings(currentPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchBookings, currentPage]); // session is intentionally omitted to prevent infinite loops
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams);

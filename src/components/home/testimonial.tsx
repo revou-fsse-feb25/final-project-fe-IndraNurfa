@@ -11,7 +11,7 @@ const Testimonial = () => {
             What Our Players Say
           </h1>
           <p className="text-muted-foreground mx-auto max-w-2xl text-lg md:text-xl">
-            Join thousands of satisfied players who have made RallyPadel their
+            Join thousands of satisfied players who have made Lobby Padel their
             home court
           </p>
         </div>
@@ -22,13 +22,13 @@ const Testimonial = () => {
             <div className="grid grid-cols-1 items-stretch gap-x-0 gap-y-4 lg:grid-cols-3 lg:gap-4">
               <img
                 src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0"
-                alt="Happy padel player at RallyPadel Arena"
+                alt="Happy padel player at Lobby Padel Arena"
                 className="h-72 w-full rounded-xl border-2 object-cover shadow-lg lg:h-auto"
               />
               <Card className="col-span-2 flex items-center justify-center border-2 p-8 shadow-lg">
                 <div className="flex flex-col gap-6">
                   <q className="text-foreground text-xl leading-relaxed font-medium lg:text-3xl">
-                    RallyPadel Arena has completely transformed my padel
+                    Lobby Padel Arena has completely transformed my padel
                     experience! The courts are pristine, the booking system is
                     seamless, and the community here is fantastic. I&apos;ve
                     improved my game significantly since joining.
@@ -90,17 +90,15 @@ const Testimonial = () => {
 
               <Card className="border-2 transition-shadow hover:shadow-lg">
                 <CardContent className="text-foreground/80 px-6 pt-6 leading-7">
-                  <q>
-                    &quot;Amazing venue with top-quality courts. The coaching
-                    here helped me reach the next level. Highly recommend for
-                    players of all skill levels!&quot;
-                  </q>
+                  &quot;Amazing venue with top-quality courts. The coaching here
+                  helped me reach the next level. Highly recommend for players
+                  of all skill levels!&quot;
                 </CardContent>
                 <CardFooter>
                   <div className="flex gap-4 leading-5">
                     <Avatar className="ring-primary/20 size-10 rounded-full ring-2">
                       <AvatarImage
-                        src="https://images.unsplash.com/photo-1494790108755-2616b332446c?w=150&h=150&fit=crop&crop=face"
+                        src="https://github.com/shadcn.png"
                         alt="Sarah Kim"
                       />
                     </Avatar>

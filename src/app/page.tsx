@@ -7,9 +7,9 @@ import { Testimonial } from "@/components/home/testimonial";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "RallyPadel Arena — Book Padel Courts",
+  title: "Lobby Padel Arena — Book Padel Courts",
   description:
-    "Book courts at RallyPadel Arena. Real-time availability, transparent pricing, instant confirmation.",
+    "Book courts at Lobby Padel Arena. Real-time availability, transparent pricing, instant confirmation.",
 };
 
 export default function Home() {
