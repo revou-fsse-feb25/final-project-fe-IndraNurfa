@@ -14,7 +14,7 @@ const FeaturesHomePage = () => {
             Premium Padel Experience
           </h2>
           <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-            Discover what makes RallyPadel Arena Jakarta&apos;s premier padel
+            Discover what makes Lobby Padel Arena Jakarta&apos;s premier padel
             destination
           </p>
         </div>

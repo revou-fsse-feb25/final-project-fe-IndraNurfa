@@ -1,6 +1,7 @@
 import { ArrowRight, MapPin } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 const Hero = () => {
   return (
@@ -10,7 +11,7 @@ const Hero = () => {
           variant="secondary"
           className="bg-primary/10 text-primary border-primary/20 px-4 py-2 text-sm font-medium"
         >
-          ⚡ RallyPadel Arena
+          ⚡ Lobby Padel Arena
         </Badge>
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <MapPin className="h-4 w-4" />
@@ -28,10 +29,12 @@ const Hero = () => {
       </p>
 
       <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-        <Button size="lg" className="px-8 py-3 text-base">
-          Book Your Court
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <Link href="#book">
+          <Button size="lg" className="px-8 py-3 text-base">
+            Book Your Court
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
         <Button variant="outline" size="lg" className="px-8 py-3 text-base">
           View Facilities
         </Button>

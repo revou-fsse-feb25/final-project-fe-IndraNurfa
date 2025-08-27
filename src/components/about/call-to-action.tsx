@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "../ui/button";
 
 const CallToActionAbout = () => {
@@ -9,9 +10,11 @@ const CallToActionAbout = () => {
         never before.
       </p>
       <div className="flex flex-col justify-center gap-4 sm:flex-row">
-        <Button size="lg" variant="secondary" className="px-8 py-3">
-          Book Now
-        </Button>
+        <Link href="/#book">
+          <Button size="lg" variant="secondary" className="px-8 py-3">
+            Book Now
+          </Button>
+        </Link>
         <Button
           size="lg"
           variant="outline"

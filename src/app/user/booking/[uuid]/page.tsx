@@ -55,8 +55,11 @@ export default function BookingDetailPage() {
       }
     };
 
-    fetchBookingDetail();
-  }, [session, uuid, router]);
+    if (session && uuid) {
+      fetchBookingDetail();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id, session?.accessToken, uuid]);
 
   const getStatusBadge = (status: string) => {
     const statusColors = {
@@ -91,6 +94,7 @@ export default function BookingDetailPage() {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+      timeZone: "Asia/Jakarta",
     });
   };
 

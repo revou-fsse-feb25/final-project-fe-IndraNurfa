@@ -1,5 +1,6 @@
 "use client";
 
+import { SiteHeader } from "@/components/admin/site-header";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -19,17 +20,15 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SiteHeader } from "@/components/admin/site-header";
 import { createApiClient } from "@/lib/api";
 import { BookingDetail } from "@/types";
 import {
   CalendarDays,
+  Check,
   Clock,
   CreditCard,
   Hash,
   MapPin,
-  User,
-  Check,
   X,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
@@ -339,22 +338,14 @@ export default function AdminBookingDetailPage() {
                 <Separator />
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-600">
-                    Customer Name
+                    Name
                   </span>
                   <span className="text-sm">{booking.details.name}</span>
                 </div>
                 <Separator />
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">
-                    Created By
-                  </span>
-                  <span className="text-sm">
-                    {booking.created_by_type || "User"}
-                  </span>
-                </div>
-                <Separator />
                 {booking.cancel_reason && (
                   <>
+                    <Separator />
                     <div className="flex items-start justify-between">
                       <span className="text-sm font-medium text-gray-600">
                         Cancel Reason
@@ -363,7 +354,6 @@ export default function AdminBookingDetailPage() {
                         {booking.cancel_reason}
                       </span>
                     </div>
-                    <Separator />
                   </>
                 )}
               </CardContent>
@@ -449,47 +439,6 @@ export default function AdminBookingDetailPage() {
                   </span>
                   <span className="text-primary text-lg font-bold">
                     {formatPrice(booking.details.total_price)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* System Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  System Information
-                </CardTitle>
-                <CardDescription>
-                  Booking timestamps and user details
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">
-                    User ID
-                  </span>
-                  <span className="font-mono text-sm">{booking.user_id}</span>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">
-                    Created At
-                  </span>
-                  <span className="text-sm">
-                    {formatDate(booking.created_at)} at{" "}
-                    {formatTime(booking.created_at)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-600">
-                    Last Updated
-                  </span>
-                  <span className="text-sm">
-                    {formatDate(booking.updated_at)} at{" "}
-                    {formatTime(booking.updated_at)}
                   </span>
                 </div>
               </CardContent>

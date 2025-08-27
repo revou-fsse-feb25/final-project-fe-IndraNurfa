@@ -82,6 +82,7 @@ const QuickBookingHome = () => {
     <section
       aria-labelledby="quick-booking"
       className="container mx-auto mt-16 max-w-5xl md:mt-24 md:max-w-6xl lg:px-16"
+      id="book"
     >
       <Card className="from-card to-muted/30 border-2 bg-gradient-to-br shadow-xl">
         <CardHeader className="gap-3 pb-6 text-center md:text-left">
