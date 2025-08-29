@@ -146,11 +146,12 @@ export const AvailableBookList: React.FC<AvailableBookListProps> = ({
   };
 
   const handleBookNow = (slot: AvailableSlot) => {
-    if (session === null) {
-      toast.info("You need to be logged in to book a slot");
+    if (!session) {
+      toast.info("Please log in to book a court");
       setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+        const currentUrl = window.location.href;
+        router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
+      }, 1500);
       return;
     }
 
@@ -181,9 +182,8 @@ export const AvailableBookList: React.FC<AvailableBookListProps> = ({
 
       toast.success("Booking created successfully!");
       setIsBookingOpen(false);
-      onBookingSuccess(); // Refresh available slots
+      onBookingSuccess();
 
-      // Reset form
       setSelectedSlot(null);
       setSelectedEndTime("");
       setCustomerName("");
@@ -198,7 +198,10 @@ export const AvailableBookList: React.FC<AvailableBookListProps> = ({
       if (status === 401) {
         toast.error("Session expired. Please log in again.");
         setTimeout(() => {
-          signOut({ callbackUrl: "/login" });
+          const currentUrl = window.location.href;
+          signOut({
+            callbackUrl: `/login?callbackUrl=${encodeURIComponent(currentUrl)}`,
+          });
         }, 2000);
       }
     } finally {

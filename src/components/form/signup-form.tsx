@@ -55,8 +55,6 @@ export function SignupForm({
     try {
       // Clear any previous API errors
       setApiError("");
-
-      console.log(data);
       const res = await publicApi.post("/auth/register", {
         email: data.email,
         full_name: data.name,

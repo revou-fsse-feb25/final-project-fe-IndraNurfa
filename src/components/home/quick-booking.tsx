@@ -43,7 +43,6 @@ const QuickBookingHome = () => {
 
   const fetchCourts = useCallback(async () => {
     try {
-      console.log("fetch court", new Date());
       const api = createApiClient();
       const res = await api.get("/courts");
       setCourts(res.data.data);

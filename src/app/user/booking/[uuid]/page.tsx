@@ -44,7 +44,8 @@ export default function BookingDetailPage() {
 
         if (status === 401) {
           toast.error("Session expired. Please log in again.");
-          router.push("/login");
+          const currentUrl = window.location.href;
+          router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
         } else if (status === 404) {
           setError("Booking not found");
         } else {
@@ -90,12 +91,22 @@ export default function BookingDetailPage() {
   };
 
   const formatTime = (time: Date | string) => {
-    return new Date(time).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Jakarta",
-    });
+    // Convert to string to extract raw time without timezone conversion
+    const timeString = typeof time === "string" ? time : time.toISOString();
+
+    // Extract time portion from ISO string (YYYY-MM-DDTHH:MM:SS.sssZ)
+    const timeMatch = timeString.match(/T(\d{2}:\d{2})/);
+    if (timeMatch) {
+      return timeMatch[1]; // Returns HH:MM format directly from backend
+    }
+
+    // Fallback: if it's already in time format
+    if (typeof time === "string" && time.match(/^\d{2}:\d{2}/)) {
+      return time.substring(0, 5); // Return HH:MM
+    }
+
+    // Last fallback
+    return String(time).substring(0, 5);
   };
 
   const formatPrice = (price: string | number) => {
@@ -106,19 +117,6 @@ export default function BookingDetailPage() {
       minimumFractionDigits: 0,
     }).format(numPrice);
   };
-
-  if (!session) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="mb-4 text-2xl font-bold">Access Denied</h1>
-          <p className="text-gray-600">
-            Please log in to view booking details.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (

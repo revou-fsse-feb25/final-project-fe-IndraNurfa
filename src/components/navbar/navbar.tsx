@@ -1,4 +1,6 @@
-import { Menu } from "lucide-react";
+import { Menu, Moon, Sun, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
+import Link from "next/link";
 
 import {
   Accordion,
@@ -7,6 +9,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -22,9 +30,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { createApiClient } from "@/lib/api";
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface MenuItem {
   title: string;
@@ -82,14 +90,20 @@ const Navbar = ({
   },
 }: Navbar1Props) => {
   const { data: session, status } = useSession();
-  const router = useRouter();
+  const { setTheme } = useTheme();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const handleDashboard = () => {
+  // Only render theme-dependent content after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getDashboardUrl = () => {
     if (session?.user?.role === "Admin") {
-      router.push("/admin");
+      return "/admin";
     } else {
-      router.push("/user");
+      return "/user";
     }
   };
 
@@ -98,23 +112,13 @@ const Navbar = ({
 
     try {
       if (session?.user) {
-        // Call backend logout API to revoke token using authenticated request
-        const res = await fetch("http://localhost:8080/v1/auth/logout", {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        });
-        if (!res.ok) {
-          console.error("Error during backend logout:");
-        }
+        await createApiClient(session).delete("/auth/logout");
       }
     } catch (error) {
       console.error("Error during backend logout:", error);
-      // Continue with NextAuth logout even if backend logout fails
     } finally {
-      // Always perform NextAuth logout
-      await signOut({ callbackUrl: "/" });
+      const currentUrl = window.location.href;
+      await signOut({ callbackUrl: currentUrl });
       setIsLoggingOut(false);
     }
   };
@@ -144,15 +148,42 @@ const Navbar = ({
             </div>
           </div>
           <div className="flex items-center justify-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  {mounted && (
+                    <>
+                      <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+                      <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+                    </>
+                  )}
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  <span>Light</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  <span>Dark</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <Monitor className="mr-2 h-4 w-4" />
+                  <span>System</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {status === "loading" ? null : session ? (
               <>
                 <Button
+                  asChild
                   variant="outline"
                   size="sm"
-                  onClick={handleDashboard}
                   disabled={isLoggingOut}
                 >
-                  Dashboard
+                  <Link href={getDashboardUrl()}>Dashboard</Link>
                 </Button>
                 <Button
                   size="sm"
@@ -180,64 +211,97 @@ const Navbar = ({
           <div className="flex items-center justify-between">
             {/* Logo */}
             <a href={logo.url} className="flex items-center gap-2">
-              <img src={logo.src} className="max-h-8" alt={logo.alt} />
+              <img src={logo.src} className="max-h-8 bg-white" alt={logo.alt} />
             </a>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="size-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>
-                    <a href={logo.url} className="flex items-center gap-2">
-                      <img src={logo.src} className="max-h-8" alt={logo.alt} />
-                    </a>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-6 p-4">
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="flex w-full flex-col gap-4"
-                  >
-                    {menu.map((item) => renderMobileMenuItem(item))}
-                  </Accordion>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    {mounted && (
+                      <>
+                        <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+                        <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+                      </>
+                    )}
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setTheme("light")}>
+                    <Sun className="mr-2 h-4 w-4" />
+                    <span>Light</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <Moon className="mr-2 h-4 w-4" />
+                    <span>Dark</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")}>
+                    <Monitor className="mr-2 h-4 w-4" />
+                    <span>System</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Menu className="size-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>
+                      <a href={logo.url} className="flex items-center gap-2">
+                        <img
+                          src={logo.src}
+                          className="max-h-8"
+                          alt={logo.alt}
+                        />
+                      </a>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-6 p-4">
+                    <Accordion
+                      type="single"
+                      collapsible
+                      className="flex w-full flex-col gap-4"
+                    >
+                      {menu.map((item) => renderMobileMenuItem(item))}
+                    </Accordion>
 
-                  {status === "loading" ? null : (
-                    <div className="flex flex-col gap-3">
-                      {session ? (
-                        <>
-                          <Button
-                            variant="outline"
-                            onClick={handleDashboard}
-                            disabled={isLoggingOut}
-                          >
-                            Dashboard
-                          </Button>
-                          <Button
-                            onClick={handleLogout}
-                            disabled={isLoggingOut}
-                          >
-                            {isLoggingOut ? "Logging out..." : "Logout"}
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button asChild variant="outline">
-                            <a href={auth.login.url}>{auth.login.title}</a>
-                          </Button>
-                          <Button asChild>
-                            <a href={auth.signup.url}>{auth.signup.title}</a>
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+                    {status === "loading" ? null : (
+                      <div className="flex flex-col gap-3">
+                        {session ? (
+                          <>
+                            <Button
+                              asChild
+                              variant="outline"
+                              disabled={isLoggingOut}
+                            >
+                              <Link href={getDashboardUrl()}>Dashboard</Link>
+                            </Button>
+                            <Button
+                              onClick={handleLogout}
+                              disabled={isLoggingOut}
+                            >
+                              {isLoggingOut ? "Logging out..." : "Logout"}
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button asChild variant="outline">
+                              <a href={auth.login.url}>{auth.login.title}</a>
+                            </Button>
+                            <Button asChild>
+                              <a href={auth.signup.url}>{auth.signup.title}</a>
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>

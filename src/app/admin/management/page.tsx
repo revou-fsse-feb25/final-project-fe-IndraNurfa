@@ -213,19 +213,6 @@ export default function AdminManagementPage() {
     }
   };
 
-  if (!session) {
-    return (
-      <div className="bg-background min-h-screen">
-        <SiteHeader title={title} />
-        <main className="container mx-auto p-6">
-          <div className="flex h-64 items-center justify-center">
-            <p className="text-gray-500">Please login to access admin panel</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-background min-h-screen">
       <SiteHeader title={title} />
