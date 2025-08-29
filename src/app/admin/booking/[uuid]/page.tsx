@@ -1,6 +1,16 @@
 "use client";
 
 import { SiteHeader } from "@/components/admin/site-header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -18,6 +28,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createApiClient } from "@/lib/api";
@@ -44,6 +56,14 @@ export default function AdminBookingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: "confirm" | "cancel" | null;
+  }>({
+    isOpen: false,
+    type: null,
+  });
+  const [cancelReason, setCancelReason] = useState<string>("");
 
   useEffect(() => {
     const fetchBookingDetail = async () => {
@@ -79,53 +99,62 @@ export default function AdminBookingDetailPage() {
   const handleConfirmBooking = async () => {
     if (!booking || !session) return;
 
-    setActionLoading("confirm");
-    try {
-      const client = createApiClient(session);
-      await client.patch(`/bookings/confirm/${booking.uuid}`);
-
-      toast.success("Booking confirmed successfully");
-      // Refresh booking data
-      const response = await client.get(`bookings/${uuid}`);
-      setBooking(response.data.data);
-    } catch (error) {
-      console.error("Error confirming booking:", error);
-      const errorMessage =
-        (error as { response?: { data?: { details?: string } } })?.response
-          ?.data?.details || "Error confirming booking";
-      toast.error(errorMessage);
-
-      const status = (error as { response?: { status?: number } })?.response
-        ?.status;
-
-      if (status === 401) {
-        toast.error("Session expired. Please login again.");
-        setTimeout(() => {
-          signOut({ callbackUrl: "/login" });
-        }, 2000);
-      }
-    } finally {
-      setActionLoading(null);
-    }
+    // Open confirmation dialog
+    setConfirmDialog({
+      isOpen: true,
+      type: "confirm",
+    });
   };
 
   const handleCancelBooking = async () => {
     if (!booking || !session) return;
 
-    setActionLoading("cancel");
+    // Reset cancel reason and open confirmation dialog
+    setCancelReason("");
+    setConfirmDialog({
+      isOpen: true,
+      type: "cancel",
+    });
+  };
+
+  const executeBookingAction = async () => {
+    if (!confirmDialog.type || !booking || !session) return;
+
+    const { type } = confirmDialog;
+    setActionLoading(type);
+    setConfirmDialog({ isOpen: false, type: null });
+
     try {
       const client = createApiClient(session);
-      await client.patch(`/bookings/cancel/${booking.uuid}`);
+      const endpoint =
+        type === "confirm"
+          ? `/bookings/confirm/${booking.uuid}`
+          : `/bookings/cancel/${booking.uuid}`;
 
-      toast.success("Booking canceled successfully");
+      // Prepare request body - add reason for cancel requests
+      const requestBody =
+        type === "cancel" && cancelReason
+          ? { reason: cancelReason }
+          : undefined;
+
+      await client.patch(endpoint, requestBody);
+
+      toast.success(
+        `Booking ${type === "confirm" ? "confirmed" : "canceled"} successfully`,
+      );
       // Refresh booking data
       const response = await client.get(`bookings/${uuid}`);
       setBooking(response.data.data);
     } catch (error) {
-      console.error("Error confirming booking:", error);
+      console.error(
+        `Error ${type === "confirm" ? "confirming" : "canceling"} booking:`,
+        error,
+      );
+
       const errorMessage =
         (error as { response?: { data?: { details?: string } } })?.response
-          ?.data?.details || "Error confirming booking";
+          ?.data?.details ||
+        `Error ${type === "confirm" ? "confirming" : "canceling"} booking`;
       toast.error(errorMessage);
 
       const status = (error as { response?: { status?: number } })?.response
@@ -457,6 +486,80 @@ export default function AdminBookingDetailPage() {
           </div>
         </div>
       </main>
+
+      <AlertDialog
+        open={confirmDialog.isOpen}
+        onOpenChange={(open) =>
+          !open && setConfirmDialog({ isOpen: false, type: null })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog.type === "confirm"
+                ? "Confirm Booking"
+                : "Cancel Booking"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.type === "confirm"
+                ? "Are you sure you want to confirm this booking?"
+                : "Are you sure you want to cancel this booking? This action cannot be undone."}
+              {booking && (
+                <div className="mt-4 space-y-2 text-sm">
+                  <div>
+                    <strong>Booking ID:</strong> {booking.uuid}
+                  </div>
+                  <div>
+                    <strong>Court:</strong> {booking.court.name}
+                  </div>
+                  <div>
+                    <strong>Date:</strong> {formatDate(booking.booking_date)}
+                  </div>
+                  <div>
+                    <strong>Time:</strong> {formatTime(booking.start_time)} -{" "}
+                    {formatTime(booking.end_time)}
+                  </div>
+                </div>
+              )}
+
+              {/* Cancel reason input - only show for cancel type */}
+              {confirmDialog.type === "cancel" && (
+                <div className="mt-4 space-y-2">
+                  <Label
+                    htmlFor="cancel-reason"
+                    className="text-sm font-medium"
+                  >
+                    Cancellation Reason (Optional)
+                  </Label>
+                  <Input
+                    id="cancel-reason"
+                    type="text"
+                    placeholder="Enter reason for cancellation..."
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeBookingAction}
+              className={
+                confirmDialog.type === "confirm"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }
+            >
+              {confirmDialog.type === "confirm"
+                ? "Confirm Booking"
+                : "Cancel Booking"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
