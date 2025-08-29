@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ButtonSpinner } from "@/components/ui/loading-spinner";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,6 +36,9 @@ export function LoginForm({
   const [loginError, setLoginError] = useState<string>("");
   const [loginSuccess, setLoginSuccess] = useState<boolean>(false);
   const searchParams = useSearchParams();
+
+  // Get callback URL from search params
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   // Check if user was redirected from signup and set initial state
   const [showSignupSuccess, setShowSignupSuccess] = useState<boolean>(
@@ -91,7 +96,7 @@ export function LoginForm({
 
         // Redirect after a brief delay to show success message
         setTimeout(() => {
-          window.location.href = "/";
+          window.location.href = callbackUrl;
         }, 1500);
       }
     } catch (error) {
@@ -179,6 +184,9 @@ export function LoginForm({
                   className="w-full"
                   disabled={isSubmitting || loginSuccess}
                 >
+                  {(isSubmitting || loginSuccess) && (
+                    <ButtonSpinner variant="white" />
+                  )}
                   {loginSuccess
                     ? "Redirecting..."
                     : isSubmitting
@@ -189,9 +197,9 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <a href="/sign-up" className="underline underline-offset-4">
+              <Link href="/sign-up" className="underline underline-offset-4">
                 Sign up
-              </a>
+              </Link>
             </div>
           </form>
         </CardContent>

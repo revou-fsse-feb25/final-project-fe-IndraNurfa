@@ -46,7 +46,6 @@ export default function TableUserBooking({
   session,
   onBookingUpdated,
 }: BookingDetailProps) {
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] =
     useState<BookingDashboard | null>(null);
@@ -79,12 +78,22 @@ export default function TableUserBooking({
   };
 
   const formatTime = (time: Date | string) => {
-    return new Date(time).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Jakarta",
-    });
+    // Convert to string to extract raw time without timezone conversion
+    const timeString = typeof time === "string" ? time : time.toISOString();
+
+    // Extract time portion from ISO string (YYYY-MM-DDTHH:MM:SS.sssZ)
+    const timeMatch = timeString.match(/T(\d{2}:\d{2})/);
+    if (timeMatch) {
+      return timeMatch[1]; // Returns HH:MM format directly from backend
+    }
+
+    // Fallback: if it's already in time format
+    if (typeof time === "string" && time.match(/^\d{2}:\d{2}/)) {
+      return time.substring(0, 5); // Return HH:MM
+    }
+
+    // Last fallback
+    return String(time).substring(0, 5);
   };
 
   const handleEdit = (booking: BookingDashboard) => {

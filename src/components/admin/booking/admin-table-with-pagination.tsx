@@ -34,6 +34,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createApiClient } from "@/lib/api";
 import { BookingDashboard } from "@/types";
 import { Check, Eye, MoreHorizontal, X } from "lucide-react";
@@ -71,6 +73,7 @@ export default function AdminTableWithPagination({
     type: null,
     booking: null,
   });
+  const [cancelReason, setCancelReason] = useState<string>("");
   const router = useRouter();
 
   const getStatusBadge = (status: string) => {
@@ -100,12 +103,22 @@ export default function AdminTableWithPagination({
   };
 
   const formatTime = (time: Date | string) => {
-    return new Date(time).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "Asia/Jakarta",
-    });
+    // Convert to string to extract raw time without timezone conversion
+    const timeString = typeof time === "string" ? time : time.toISOString();
+
+    // Extract time portion from ISO string (YYYY-MM-DDTHH:MM:SS.sssZ)
+    const timeMatch = timeString.match(/T(\d{2}:\d{2})/);
+    if (timeMatch) {
+      return timeMatch[1]; // Returns HH:MM format directly from backend
+    }
+
+    // Fallback: if it's already in time format
+    if (typeof time === "string" && time.match(/^\d{2}:\d{2}/)) {
+      return time.substring(0, 5); // Return HH:MM
+    }
+
+    // Last fallback
+    return String(time).substring(0, 5);
   };
 
   const handleConfirmBooking = async (booking: BookingDashboard) => {
@@ -128,7 +141,8 @@ export default function AdminTableWithPagination({
       return;
     }
 
-    // Open confirmation dialog
+    // Reset cancel reason and open confirmation dialog
+    setCancelReason("");
     setConfirmDialog({
       isOpen: true,
       type: "cancel",
@@ -152,7 +166,13 @@ export default function AdminTableWithPagination({
           ? `/bookings/confirm/${booking.uuid}`
           : `/bookings/cancel/${booking.uuid}`;
 
-      await client.patch(endpoint);
+      // Prepare request body - add reason for cancel requests
+      const requestBody =
+        type === "cancel" && cancelReason
+          ? { reason: cancelReason }
+          : undefined;
+
+      await client.patch(endpoint, requestBody);
 
       toast.success(
         `Booking ${type === "confirm" ? "confirmed" : "canceled"} successfully`,
@@ -350,6 +370,26 @@ export default function AdminTableWithPagination({
                     {formatTime(confirmDialog.booking.start_time)} -{" "}
                     {formatTime(confirmDialog.booking.end_time)}
                   </div>
+                </div>
+              )}
+
+              {/* Cancel reason input - only show for cancel type */}
+              {confirmDialog.type === "cancel" && (
+                <div className="mt-4 space-y-2">
+                  <Label
+                    htmlFor="cancel-reason"
+                    className="text-sm font-medium"
+                  >
+                    Cancellation Reason (Optional)
+                  </Label>
+                  <Input
+                    id="cancel-reason"
+                    type="text"
+                    placeholder="Enter reason for cancellation..."
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
               )}
             </AlertDialogDescription>

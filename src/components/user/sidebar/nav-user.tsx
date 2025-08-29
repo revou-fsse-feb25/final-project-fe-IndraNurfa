@@ -38,8 +38,6 @@ export function NavUser({
     try {
       if (session?.user) {
         await api.delete("/auth/logout");
-
-        console.log("Successfully logged out from backend");
       }
     } catch (error) {
       console.error("Error during backend logout:", error);

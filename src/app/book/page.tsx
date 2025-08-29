@@ -23,7 +23,6 @@ function BookPageContent() {
 
   const fetchCourts = async () => {
     try {
-      console.log("fetch court", new Date());
       const res = await publicApi.get("/courts");
       setCourts(res.data.data);
     } catch (err) {
@@ -46,7 +45,6 @@ function BookPageContent() {
         const res = await publicApi.get("/bookings/available", {
           params: { court: queryCourt, date: queryDate },
         });
-        console.log(res.data);
         setAvailable(res.data.data.available_slots);
         setPricePerHour(res.data.data.price || 0);
       } catch (err) {
@@ -98,7 +96,9 @@ function BookPageContent() {
         courts={courts}
         session={session}
         loading={loading}
-        onBookingSuccess={() => fetchAvailable(searchDate, searchCourt)}
+        onBookingSuccess={() =>
+          fetchAvailable(searchDate || date, searchCourt || court)
+        }
       />
     </div>
   );

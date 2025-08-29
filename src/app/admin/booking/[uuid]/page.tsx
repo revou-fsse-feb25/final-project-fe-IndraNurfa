@@ -61,7 +61,8 @@ export default function AdminBookingDetailPage() {
 
         if (status === 401) {
           toast.error("Session expired. Please log in again.");
-          router.push("/login");
+          const currentUrl = window.location.href;
+          router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
         } else if (status === 404) {
           setError("Booking not found");
         } else {
@@ -170,11 +171,22 @@ export default function AdminBookingDetailPage() {
   };
 
   const formatTime = (time: Date | string) => {
-    return new Date(time).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+    // Convert to string to extract raw time without timezone conversion
+    const timeString = typeof time === "string" ? time : time.toISOString();
+
+    // Extract time portion from ISO string (YYYY-MM-DDTHH:MM:SS.sssZ)
+    const timeMatch = timeString.match(/T(\d{2}:\d{2})/);
+    if (timeMatch) {
+      return timeMatch[1]; // Returns HH:MM format directly from backend
+    }
+
+    // Fallback: if it's already in time format
+    if (typeof time === "string" && time.match(/^\d{2}:\d{2}/)) {
+      return time.substring(0, 5); // Return HH:MM
+    }
+
+    // Last fallback
+    return String(time).substring(0, 5);
   };
 
   const formatPrice = (price: string | number) => {
@@ -342,7 +354,6 @@ export default function AdminBookingDetailPage() {
                   </span>
                   <span className="text-sm">{booking.details.name}</span>
                 </div>
-                <Separator />
                 {booking.cancel_reason && (
                   <>
                     <Separator />
