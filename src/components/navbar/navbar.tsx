@@ -67,7 +67,7 @@ const Navbar = ({
     url: "/",
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
     alt: "logo",
-    title: "Shadcnblocks.com",
+    title: "Lobby Padel",
   },
   menu = [
     { title: "Home", url: "/" },
@@ -134,7 +134,11 @@ const Navbar = ({
           <div className="flex items-center gap-6">
             {/* Logo */}
             <a href={logo.url} className="flex items-center gap-2">
-              <img src={logo.src} className="max-h-8" alt={logo.alt} />
+              <img
+                src={logo.src}
+                className={`max-h-8 rounded bg-white ${mounted ? "dark:bg-gray-100" : ""}`}
+                alt={logo.alt}
+              />
               <span className="text-lg font-semibold tracking-tighter">
                 {logo.title}
               </span>
@@ -151,11 +155,13 @@ const Navbar = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
-                  {mounted && (
+                  {mounted ? (
                     <>
                       <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
                       <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
                     </>
+                  ) : (
+                    <div className="h-4 w-4" />
                   )}
                   <span className="sr-only">Toggle theme</span>
                 </Button>
@@ -211,17 +217,23 @@ const Navbar = ({
           <div className="flex items-center justify-between">
             {/* Logo */}
             <a href={logo.url} className="flex items-center gap-2">
-              <img src={logo.src} className="max-h-8 bg-white" alt={logo.alt} />
+              <img
+                src={logo.src}
+                className={`max-h-8 rounded bg-white ${mounted ? "dark:bg-gray-100" : ""}`}
+                alt={logo.alt}
+              />
             </a>
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-9 w-9">
-                    {mounted && (
+                    {mounted ? (
                       <>
                         <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
                         <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
                       </>
+                    ) : (
+                      <div className="h-4 w-4" />
                     )}
                     <span className="sr-only">Toggle theme</span>
                   </Button>
@@ -253,9 +265,12 @@ const Navbar = ({
                       <a href={logo.url} className="flex items-center gap-2">
                         <img
                           src={logo.src}
-                          className="max-h-8"
+                          className={`max-h-8 rounded bg-white ${mounted ? "dark:bg-gray-100" : ""}`}
                           alt={logo.alt}
                         />
+                        <span className="text-lg font-semibold tracking-tighter">
+                          {logo.title}
+                        </span>
                       </a>
                     </SheetTitle>
                   </SheetHeader>

@@ -24,7 +24,7 @@ const Hero = () => {
       </h1>
 
       <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-balance md:text-xl">
-        Book a court in seconds with real‑time availability and instant
+        Book a court in seconds with real-time availability and instant
         confirmation. Experience premium padel at Jakarta&apos;s finest venue.
       </p>
 

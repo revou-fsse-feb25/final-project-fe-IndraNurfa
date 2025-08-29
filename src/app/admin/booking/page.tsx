@@ -94,7 +94,12 @@ function AdminBookingContent() {
 
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <p className="text-gray-500">Loading bookings...</p>
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900 dark:border-gray-600 dark:border-t-gray-100"></div>
+                <p className="text-gray-900 dark:text-gray-100">
+                  Loading bookings...
+                </p>
+              </div>
             </div>
           ) : (
             <AdminTableWithPagination
