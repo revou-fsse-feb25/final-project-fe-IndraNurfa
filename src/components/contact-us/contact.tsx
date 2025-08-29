@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-interface Contact2Props {
+interface ContactProps {
   title?: string;
   description?: string;
   phone?: string;
@@ -13,13 +13,13 @@ interface Contact2Props {
   web?: { label: string; url: string };
 }
 
-const Contact2 = ({
+const Contact = ({
   title = "Contact Us",
   description = "We are available for questions, feedback, or collaboration opportunities. Let us know how we can help!",
   phone = "(123) 34567890",
   email = "email@example.com",
   web = { label: "shadcnblocks.com", url: "https://shadcnblocks.com" },
-}: Contact2Props) => {
+}: ContactProps) => {
   return (
     <section className="py-32">
       <div className="container mx-auto max-w-6xl">
@@ -86,4 +86,4 @@ const Contact2 = ({
   );
 };
 
-export { Contact2 };
+export { Contact };
