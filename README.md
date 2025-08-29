@@ -174,6 +174,9 @@ npm run start
 ![Homepage](./public/docs/homepage.png)
 _Homepage - Welcome to Lobby Padel_
 
+![Available Bookings](./public/docs/list-available-booking.png)
+_Available Bookings - Browse and select court time slots_
+
 ![Pricing](./public/docs/pricing.png)
 _Pricing - Explore our flexible pricing plans_
 
