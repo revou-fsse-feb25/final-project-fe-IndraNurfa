@@ -6,7 +6,7 @@ import Link from "next/link";
 const plans = [
   {
     name: "ALPHA",
-    price: 25,
+    price: 300000,
     description:
       "Enjoy our outdoor padel courts with natural lighting and fresh air experience.",
     features: [
@@ -21,7 +21,7 @@ const plans = [
   },
   {
     name: "BETA",
-    price: 45,
+    price: 500000,
     isRecommended: true,
     description:
       "Premium indoor padel courts with climate control and professional lighting.",
@@ -40,6 +40,13 @@ const plans = [
 ];
 
 const Pricing = () => {
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
   return (
     <div className="container mx-auto flex min-h-screen flex-col px-6 pt-10">
       <h1 className="text-center text-5xl font-bold tracking-tight">Pricing</h1>
@@ -47,7 +54,7 @@ const Pricing = () => {
         {plans.map((plan) => (
           <div key={plan.name} className="flex flex-col rounded-lg border p-6">
             <h3 className="text-lg font-medium">{plan.name}</h3>
-            <p className="mt-2 text-4xl font-bold">${plan.price}</p>
+            <p className="mt-2 text-4xl font-bold">{formatPrice(plan.price)}</p>
             <p className="text-muted-foreground mt-4 font-medium">
               {plan.description}
             </p>
