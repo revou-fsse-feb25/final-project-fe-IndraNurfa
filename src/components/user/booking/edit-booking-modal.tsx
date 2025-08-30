@@ -95,8 +95,28 @@ export default function EditBookingModal({
       const bookingDate = new Date(booking.booking_date)
         .toISOString()
         .split("T")[0];
-      const startTime = new Date(booking.start_time).toTimeString().slice(0, 5);
-      const endTime = new Date(booking.end_time).toTimeString().slice(0, 5);
+
+      // Use the same time formatting approach as the table to avoid timezone conversion
+      const formatTime = (time: Date | string) => {
+        const timeString = typeof time === "string" ? time : time.toISOString();
+
+        // Extract time portion from ISO string (YYYY-MM-DDTHH:MM:SS.sssZ)
+        const timeMatch = timeString.match(/T(\d{2}:\d{2})/);
+        if (timeMatch) {
+          return timeMatch[1]; // Returns HH:MM format directly from backend
+        }
+
+        // Fallback: if it's already in time format
+        if (typeof time === "string" && time.match(/^\d{2}:\d{2}/)) {
+          return time.substring(0, 5); // Return HH:MM
+        }
+
+        // Last fallback
+        return String(time).substring(0, 5);
+      };
+
+      const startTime = formatTime(booking.start_time);
+      const endTime = formatTime(booking.end_time);
 
       // Set the Date object for the calendar
       const dateObj = new Date(booking.booking_date);
@@ -131,7 +151,7 @@ export default function EditBookingModal({
     setIsLoading(true);
     try {
       const api = createApiClient(session);
-      await api.put(`bookings/${booking.uuid}`, editFormData);
+      await api.patch(`bookings/${booking.uuid}`, editFormData);
 
       toast.success("Booking updated successfully!");
       onClose();
