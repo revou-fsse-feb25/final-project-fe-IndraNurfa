@@ -1,6 +1,7 @@
 import { CallToActionHome } from "@/components/home/call-to-action";
 import CarouselOpacity from "@/components/home/carousel-slide-opacity";
 import { FeaturesHomePage } from "@/components/home/features";
+import Health from "@/components/home/health";
 import { Hero } from "@/components/home/hero";
 import { QuickBookingHome } from "@/components/home/quick-booking";
 import { Testimonial } from "@/components/home/testimonial";
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main className="container mx-auto px-4 pt-10 pb-16 md:pt-16">
+      {/* Check Connection */}
+      <Health />
+
       {/* Gallery */}
       <section className="mx-auto max-w-6xl">
         <CarouselOpacity />
